@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application
         android:name=".QStaremApplication"
@@ -28,5 +31,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".media.MediaControlReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.qstarem.app.action.MEDIA_TOGGLE" />
+                <action android:name="com.qstarem.app.action.MEDIA_STOP" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

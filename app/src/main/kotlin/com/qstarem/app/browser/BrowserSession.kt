@@ -2,6 +2,7 @@ package com.qstarem.app.browser
 
 import android.util.Log
 import com.qstarem.app.GeckoRuntimeHolder
+import com.qstarem.app.media.MediaSessionCoordinator
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.NavigationDelegate
 import org.mozilla.geckoview.GeckoSession.ProgressDelegate
@@ -9,10 +10,12 @@ import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.GeckoView
 
 class BrowserSession(
+    private val mediaSessionCoordinator: MediaSessionCoordinator,
     private val onProgress: (Float) -> Unit,
     private val onLoadingChanged: (Boolean) -> Unit,
     private val onCanGoBackChanged: (Boolean) -> Unit,
     private val onFullscreenChanged: (Boolean) -> Unit,
+    private val onEnterPipRequested: () -> Unit,
     private val onViewAttached: () -> Unit = {},
 ) {
     val session: GeckoSession = GeckoSession(
@@ -27,6 +30,8 @@ class BrowserSession(
     private var pendingUrl: String? = null
 
     init {
+        mediaSessionCoordinator.attachTo(session)
+
         session.progressDelegate = object : ProgressDelegate {
             override fun onPageStart(session: GeckoSession, url: String) {
                 onLoadingChanged(true)
@@ -57,7 +62,12 @@ class BrowserSession(
                 url: String?,
                 permissions: MutableList<GeckoSession.PermissionDelegate.ContentPermission>,
                 hasUserGesture: Boolean,
-            ) = Unit
+            ) {
+                if (url?.contains("#qstarem-pip") == true) {
+                    Log.i(TAG, "Bridge requested PiP via URL hash")
+                    onEnterPipRequested()
+                }
+            }
         }
 
         session.contentDelegate = object : GeckoSession.ContentDelegate {

@@ -15,7 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Videocam
@@ -44,6 +44,7 @@ private val ChromeLabel = Color(0x99ECECF4)
 fun BrowserChromeOverlay(
     visible: Boolean,
     expanded: Boolean,
+    showCollapsedHint: Boolean,
     canGoBack: Boolean,
     onExpand: () -> Unit,
     onBack: () -> Unit,
@@ -61,8 +62,8 @@ fun BrowserChromeOverlay(
     ) {
         AnimatedVisibility(
             visible = expanded,
-            enter = slideInVertically(initialOffsetY = { it / 2 }, animationSpec = tween(220)) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { it / 2 }, animationSpec = tween(180)) + fadeOut(),
+            enter = slideInVertically(initialOffsetY = { -it / 2 }, animationSpec = tween(220)) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { -it / 2 }, animationSpec = tween(180)) + fadeOut(),
         ) {
             Surface(
                 shape = RoundedCornerShape(28.dp),
@@ -104,36 +105,38 @@ fun BrowserChromeOverlay(
             }
         }
 
-        AnimatedVisibility(
-            visible = !expanded,
-            enter = fadeIn(tween(180)),
-            exit = fadeOut(tween(120)),
-        ) {
-            Surface(
-                onClick = onExpand,
-                shape = RoundedCornerShape(20.dp),
-                color = ChromeGlass,
-                border = BorderStroke(1.dp, ChromeBorder),
-                shadowElevation = 8.dp,
+        if (showCollapsedHint) {
+            AnimatedVisibility(
+                visible = !expanded,
+                enter = fadeIn(tween(180)),
+                exit = fadeOut(tween(120)),
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                Surface(
+                    onClick = onExpand,
+                    shape = RoundedCornerShape(20.dp),
+                    color = ChromeGlass,
+                    border = BorderStroke(1.dp, ChromeBorder),
+                    shadowElevation = 8.dp,
                 ) {
-                    Icon(
-                        Icons.Default.KeyboardArrowUp,
-                        contentDescription = null,
-                        tint = ChromeAccent,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Text(
-                        text = stringResource(R.string.tap_for_controls),
-                        color = ChromeLabel,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = 0.4.sp,
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = ChromeAccent,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Text(
+                            text = stringResource(R.string.tap_for_controls),
+                            color = ChromeLabel,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.4.sp,
+                        )
+                    }
                 }
             }
         }

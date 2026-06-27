@@ -9,7 +9,8 @@ import com.qstarem.app.browser.GeckoReadyWaiter
 import android.util.Log
 import com.qstarem.app.data.AppSettings
 import com.qstarem.app.data.SettingsRepository
-import kotlinx.coroutines.delay
+import com.qstarem.app.media.MediaSessionCoordinator
+import com.qstarem.app.media.QStaremMediaHolder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,9 @@ enum class AppPhase {
 class BrowserViewModel(application: Application) : AndroidViewModel(application) {
     private val settingsRepository = SettingsRepository(application)
     private val extensionManager = ExtensionManager()
+    val mediaSessionCoordinator = MediaSessionCoordinator(application).also {
+        QStaremMediaHolder.coordinator = it
+    }
 
     val settings: StateFlow<AppSettings> = settingsRepository.settings.stateIn(
         scope = viewModelScope,
@@ -53,15 +57,22 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     private val _isInPictureInPicture = MutableStateFlow(false)
     val isInPictureInPicture: StateFlow<Boolean> = _isInPictureInPicture.asStateFlow()
 
+    val isMediaPlaying: StateFlow<Boolean> = mediaSessionCoordinator.isMediaPlaying
+
+    var onRequestPip: (() -> Boolean)? = null
+    private var onEnterPipListener: (() -> Unit)? = null
+
     fun setPictureInPictureMode(inPip: Boolean) {
         _isInPictureInPicture.value = inPip
     }
 
     val browserSession: BrowserSession = BrowserSession(
+        mediaSessionCoordinator = mediaSessionCoordinator,
         onProgress = { progress -> _loadProgress.value = progress },
         onLoadingChanged = { loading -> _isLoading.value = loading },
         onCanGoBackChanged = { canGoBack -> _canGoBack.value = canGoBack },
         onFullscreenChanged = { fullscreen -> _isFullscreen.value = fullscreen },
+        onEnterPipRequested = { onEnterPipListener?.invoke() },
         onViewAttached = { viewAttachListener?.invoke() },
     )
 
@@ -71,6 +82,10 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     private var startupComplete = false
 
     private var hasStarted = false
+
+    fun configurePipBridge(onEnterPip: () -> Unit) {
+        onEnterPipListener = onEnterPip
+    }
 
     fun startIfNeeded() {
         if (hasStarted) return
@@ -126,6 +141,18 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         browserSession.loadUrl(settings.value.homeUrl)
     }
 
+    fun goHomeOrPip() {
+        if (isMediaPlaying.value) {
+            onRequestPip?.invoke()
+        } else {
+            goHome()
+        }
+    }
+
+    fun requestPipIfPlaying(): Boolean {
+        return onRequestPip?.invoke() ?: false
+    }
+
     fun applySettings(newSettings: AppSettings) {
         viewModelScope.launch {
             settingsRepository.updateHomeUrl(newSettings.homeUrl)
@@ -149,6 +176,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
     override fun onCleared() {
         browserSession.release()
+        QStaremMediaHolder.coordinator = null
         super.onCleared()
     }
 

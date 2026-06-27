@@ -39,6 +39,12 @@ class ExtensionManager {
 
         val steps = mutableListOf<() -> GeckoResult<*>>()
 
+        steps += {
+            Log.i(TAG, "Installing QStarem bridge extension")
+            controller.ensureBuiltIn(ExtensionAssets.QSTAREM_BRIDGE_URI, ExtensionIds.QSTAREM_BRIDGE)
+                .then { extension -> enableExtension(extension) }
+        }
+
         if (settings.pStreamEnabled) {
             steps += {
                 Log.i(TAG, "Installing P-Stream extension")

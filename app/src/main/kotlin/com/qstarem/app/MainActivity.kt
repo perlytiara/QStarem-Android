@@ -1,43 +1,53 @@
 package com.qstarem.app
 
-import android.app.PictureInPictureParams
+import android.Manifest
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import com.qstarem.app.media.PipController
 import com.qstarem.app.ui.BrowserScreen
 import com.qstarem.app.ui.SettingsSheet
 import com.qstarem.app.theme.QStaremTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: BrowserViewModel by viewModels()
-    private var pipParams: PictureInPictureParams? = null
+    private lateinit var pipController: PipController
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val params = PictureInPictureParams.Builder()
-                .setAspectRatio(Rational(16, 9))
-                .setAutoEnterEnabled(true)
-                .build()
-            pipParams = params
-            setPictureInPictureParams(params)
+        pipController = PipController(
+            activity = this,
+            isMediaPlayingProvider = { viewModel.isMediaPlaying.value },
+        )
+
+        viewModel.configurePipBridge {
+            pipController.enterPipIfPlaying()
         }
+        viewModel.onRequestPip = { pipController.enterPipIfPlaying() }
+
+        requestNotificationPermissionIfNeeded()
 
         onBackPressedDispatcher.addCallback(this) {
             if (viewModel.canGoBack.value) {
@@ -57,9 +67,13 @@ class MainActivity : ComponentActivity() {
                 val canGoBack by viewModel.canGoBack.collectAsState()
                 val isFullscreen by viewModel.isFullscreen.collectAsState()
                 val isInPictureInPicture by viewModel.isInPictureInPicture.collectAsState()
+                val isMediaPlaying by viewModel.isMediaPlaying.collectAsState()
                 var showSettings by remember { mutableStateOf(false) }
+                var controlsRevealed by remember { mutableStateOf(false) }
 
                 viewModel.startIfNeeded()
+
+                updateImmersiveMode(isMediaPlaying, controlsRevealed)
 
                 BrowserScreen(
                     browserSession = viewModel.browserSession,
@@ -69,13 +83,17 @@ class MainActivity : ComponentActivity() {
                     canGoBack = canGoBack,
                     isFullscreen = isFullscreen,
                     isInPictureInPicture = isInPictureInPicture,
+                    isMediaPlaying = isMediaPlaying,
+                    controlsRevealed = controlsRevealed,
+                    onControlsRevealedChange = { controlsRevealed = it },
                     showSplash = phase != AppPhase.READY,
                     splashMessage = splashMessage,
                     onBack = { viewModel.goBack() },
                     onReload = { viewModel.reload() },
-                    onHome = { viewModel.goHome() },
-                    onEnterPip = { enterPipMode() },
+                    onHome = { viewModel.goHomeOrPip() },
+                    onEnterPip = { pipController.enterPipIfPlaying() },
                     onOpenSettings = { showSettings = true },
+                    onSwipeUpForPip = { pipController.enterPipIfPlaying() },
                 )
 
                 if (showSettings) {
@@ -95,9 +113,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (supportsPip()) {
-            enterPipMode()
-        }
+        pipController.onUserLeaveHint()
     }
 
     override fun onPictureInPictureModeChanged(
@@ -108,17 +124,24 @@ class MainActivity : ComponentActivity() {
         viewModel.setPictureInPictureMode(isInPictureInPictureMode)
     }
 
-    private fun enterPipMode() {
-        if (!supportsPip()) return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val params = pipParams ?: PictureInPictureParams.Builder()
-                .setAspectRatio(Rational(16, 9))
-                .build()
-            enterPictureInPictureMode(params)
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
-    private fun supportsPip(): Boolean {
-        return packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+    private fun updateImmersiveMode(isMediaPlaying: Boolean, controlsRevealed: Boolean) {
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        if (isMediaPlaying && !controlsRevealed) {
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+        }
     }
 }

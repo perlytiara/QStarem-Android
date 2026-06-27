@@ -21,4 +21,9 @@
     <string name="adblock_none">Off</string>
     <string name="extensions_installing">Installing extensions…</string>
     <string name="tap_for_controls">Controls</string>
+    <string name="media_playback_channel">Media playback</string>
+    <string name="media_playback_channel_desc">Playback controls for Z-Stream videos</string>
+    <string name="media_play">Play</string>
+    <string name="media_pause">Pause</string>
+    <string name="media_stop">Stop</string>
 </resources>
