@@ -1,0 +1,102 @@
+# QStarem
+
+<p align="center">
+  <img src="docs/assets/logo.svg" alt="QStarem logo" width="160">
+</p>
+
+<p align="center">
+  A native Android browser shell for <a href="https://zstream.mov">Z-Stream</a> with bundled P-Stream and ad blocking.
+</p>
+
+<p align="center">
+  <a href="https://github.com/perlytiara/QStarem-Android/actions/workflows/ci.yml"><img src="https://github.com/perlytiara/QStarem-Android/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/perlytiara/QStarem-Android/releases/latest"><img src="https://img.shields.io/github/v/release/perlytiara/QStarem-Android?label=release" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/Android-8.0%2B-brightgreen" alt="Android 8.0+">
+  <img src="https://img.shields.io/badge/minSdk-26-blue" alt="minSdk 26">
+</p>
+
+<p align="center">
+  <a href="https://github.com/perlytiara/QStarem-Universal">Desktop (Rust)</a>
+  ·
+  <a href="https://github.com/perlytiara/QStarem-Android/releases/latest">Download APK</a>
+</p>
+
+## Why QStarem for Z-Stream
+
+Z-Stream is a movie-web-style streaming frontend. QStarem wraps it in a focused mobile browser with everything pre-configured:
+
+- **P-Stream** — extra sources and quality options (no manual XPI install on Android)
+- **uBlock Origin** (default) or **AdGuard** — ad and popup blocking
+- **GeckoView** — real Firefox engine with WebExtension support
+- **Picture-in-Picture**, edge-to-edge video, and a minimal dark UI
+
+Swipe down from the top for back, reload, home, PiP, and settings.
+
+## Install from Releases
+
+1. Open [Releases](https://github.com/perlytiara/QStarem-Android/releases/latest) and download `QStarem-*-release.apk`.
+2. On your phone, allow installs from your browser or file manager when prompted.
+3. If needed: **Settings → Security → Install unknown apps** and enable your download app.
+4. Open **QStarem** and start browsing your configured Z-Stream instance (default: [zstream.mov](https://zstream.mov)).
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| Z-Stream frontend | Default home URL `https://zstream.mov`, configurable in settings |
+| P-Stream | Toggle bundled extension for enhanced sources |
+| Ad blocking | uBlock Origin, AdGuard, or off |
+| PiP | Auto on home press (Android 12+), manual button in chrome |
+| Settings | Home URL, extensions, clear browsing data |
+
+## Disclaimer
+
+QStarem is a browser shell for user-configured streaming frontends. It does not host, index, or distribute content. Bundled extensions are subject to their own licenses:
+
+- P-Stream — MPL 2.0
+- uBlock Origin — GPLv3
+- AdGuard — open source (see extension package)
+
+## Build from source
+
+### Requirements
+
+- Android SDK API 36
+- Java 17 (`brew install openjdk@17`)
+- `curl`, `unzip`, optional `jq`
+
+### Steps
+
+```bash
+git clone https://github.com/perlytiara/QStarem-Android.git
+cd QStarem-Android
+./scripts/fetch-extensions.sh
+./gradlew installDebug
+```
+
+Enable USB debugging, connect your device, and accept the install prompt.
+
+### Release build
+
+```bash
+./scripts/fetch-extensions.sh
+./gradlew assembleRelease
+```
+
+Release signing uses environment variables in CI (`ANDROID_KEYSTORE_*`). See `.github/workflows/release.yml`.
+
+## Project structure
+
+```text
+app/src/main/kotlin/com/qstarem/   App code (GeckoView + Compose)
+app/src/main/assets/extensions/  Bundled WebExtensions (fetched at build time)
+scripts/fetch-extensions.sh        Download latest XPIs from Mozilla Add-ons
+```
+
+## Related projects
+
+- **[QStarem Universal](https://github.com/perlytiara/QStarem-Universal)** — Rust/Tauri desktop counterpart for macOS, Linux, and Windows.
+
+## License
+
+QStarem app shell: [MIT](LICENSE). Third-party extensions retain their original licenses.

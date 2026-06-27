@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="splash_background">#FF0A0A0F</color>
+    <color name="primary_purple">#FF9B5DE5</color>
+    <color name="primary_pink">#FFFF6B9D</color>
+    <color name="surface_dark">#FF12121A</color>
+    <color name="surface_elevated">#FF1A1A26</color>
+</resources>

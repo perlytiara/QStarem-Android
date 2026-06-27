@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="QStarem logo">
+  <rect width="512" height="512" rx="96" fill="#0A0A0F"/>
+  <circle cx="256" cy="256" r="150" fill="#9B5DE5"/>
+  <path fill="#FF6B9D" d="M208 176 L352 256 L208 336 Z"/>
+  <text x="256" y="430" text-anchor="middle" fill="#F5F5FA" font-family="system-ui, sans-serif" font-size="48" font-weight="700">QStarem</text>
+</svg>

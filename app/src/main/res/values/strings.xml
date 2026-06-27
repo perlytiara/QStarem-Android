@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QStarem</string>
+    <string name="default_home_url">https://zstream.mov</string>
+    <string name="loading">Loading Z-Stream…</string>
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="reload">Reload</string>
+    <string name="home">Home</string>
+    <string name="picture_in_picture">Picture in Picture</string>
+    <string name="home_url">Home URL</string>
+    <string name="ad_blocker">Ad blocker</string>
+    <string name="pstream_extension">P-Stream extension</string>
+    <string name="clear_browsing_data">Clear browsing data</string>
+    <string name="about">About</string>
+    <string name="reset_url">Reset to zstream.mov</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="adblock_ublock">uBlock Origin</string>
+    <string name="adblock_adguard">AdGuard</string>
+    <string name="adblock_none">Off</string>
+    <string name="extensions_installing">Installing extensions…</string>
+    <string name="tap_for_controls">Controls</string>
+</resources>

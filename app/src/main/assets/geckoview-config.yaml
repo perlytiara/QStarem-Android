@@ -1,0 +1,9 @@
+prefs:
+  layers.gpu-process.enabled: false
+  fission.autostart: false
+  browser.tabs.remote.autostart: false
+  browser.tabs.remote.separatePrivilegedContentProcess: false
+  dom.ipc.processCount: 0
+  dom.ipc.processCount.web: 0
+  dom.ipc.tabs.disabled: true
+  toolkit.crashreporter.enabled: false
