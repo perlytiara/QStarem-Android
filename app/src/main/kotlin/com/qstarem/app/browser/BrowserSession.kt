@@ -103,7 +103,7 @@ class BrowserSession(
                     url.contains(UPDATE_CHECK_HASH) -> {
                         Log.i(TAG, "Bridge requested update check")
                         onUpdateCheckRequested()
-                        restoreUrlWithoutHash(url, UPDATE_CHECK_HASH)
+                        stripHashWithoutNavigation(url, UPDATE_CHECK_HASH)
                     }
                     url.contains(UPDATE_INSTALL_HASH) -> {
                         Log.i(TAG, "Bridge requested update install")
@@ -195,10 +195,21 @@ class BrowserSession(
 
     fun pushUpdateStatusToPage(state: UpdateUiState) {
         if (!isOpen || !isViewAttached) return
-        val message = state.message?.replace("\\", "\\\\")?.replace("\"", "\\\"") ?: ""
+        val message = state.message?.replace("\\", "\\\\")?.replace("'", "\\'")?.replace("\"", "\\\"") ?: ""
+        val availableVersion = state.availableVersion?.replace("'", "\\'") ?: ""
+        val currentVersion = state.currentVersion.replace("'", "\\'")
         val script =
-            "javascript:(function(){try{window.dispatchEvent(new CustomEvent('qstarem-update-status',{detail:{phase:'${state.phase.name.lowercase()}',message:'$message',availableVersion:'${state.availableVersion ?: ""}',progress:${state.progress}}}));}catch(e){}})()"
+            "javascript:(function(){try{var p=document.getElementById('qstarem-settings-panel');if(p){p.hidden=false;document.body.classList.add('qstarem-settings-open');}window.dispatchEvent(new CustomEvent('qstarem-update-status',{detail:{phase:'${state.phase.name.lowercase()}',message:'$message',availableVersion:'$availableVersion',currentVersion:'$currentVersion',progress:${state.progress}}}));}catch(e){}})()"
         session.loadUri(script)
+    }
+
+    private fun stripHashWithoutNavigation(url: String, hashMarker: String) {
+        val cleanUrl = url.substringBefore(hashMarker).trimEnd('#', '?', '&')
+        if (cleanUrl.isBlank()) return
+        val escaped = cleanUrl.replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"")
+        session.loadUri(
+            "javascript:(function(){try{var target='$escaped';if(location.href!==target){history.replaceState(null,'',target);}}catch(e){}})()",
+        )
     }
 
     fun release() {

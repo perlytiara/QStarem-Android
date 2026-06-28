@@ -62,10 +62,10 @@ class AppUpdateManager(context: Context) {
                     downloadedApk = null
                     _state.value = _state.value.copy(
                         phase = UpdatePhase.Idle,
-                        availableVersion = null,
+                        availableVersion = manifest.version,
                         notes = null,
                         progress = 0f,
-                        message = "You're up to date (v${BuildConfig.VERSION_NAME}).",
+                        message = "You're up to date. Installed v${BuildConfig.VERSION_NAME}, latest v${manifest.version}.",
                     )
                     return@withContext
                 }

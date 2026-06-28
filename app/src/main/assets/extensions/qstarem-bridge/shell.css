@@ -203,7 +203,107 @@ body.qstarem-settings-open {
 }
 
 .qstarem-update-section {
-  gap: 0.45rem;
+  gap: 0.65rem;
+}
+
+.qstarem-update-badge {
+  display: inline-flex;
+  align-self: start;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.qstarem-update-badge-idle {
+  background: rgba(255, 255, 255, 0.08);
+  color: #c8c8d5;
+}
+
+.qstarem-update-badge-checking {
+  background: rgba(255, 193, 7, 0.16);
+  color: #ffd666;
+}
+
+.qstarem-update-badge-downloading {
+  background: rgba(155, 93, 229, 0.18);
+  color: #d4b4ff;
+}
+
+.qstarem-update-badge-ready {
+  background: rgba(155, 93, 229, 0.28);
+  color: #ffffff;
+}
+
+.qstarem-update-badge-current {
+  background: rgba(76, 175, 80, 0.18);
+  color: #9be7a8;
+}
+
+.qstarem-update-badge-error {
+  background: rgba(244, 67, 54, 0.18);
+  color: #ff9f96;
+}
+
+.qstarem-update-version-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.qstarem-update-version-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.qstarem-update-version-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #9a9ab0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.qstarem-update-version-value {
+  font-size: 1rem;
+  color: #f5f5fa;
+}
+
+.qstarem-update-progress-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.qstarem-update-progress-track {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.qstarem-update-progress-bar {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9b5de5, #ff6b9d);
+  transition: width 0.2s ease;
+}
+
+.qstarem-update-progress-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #d8d8e4;
+  min-width: 2.5rem;
+  text-align: right;
 }
 
 .qstarem-update-version {
@@ -221,4 +321,7 @@ body.qstarem-settings-open {
 
 .qstarem-update-install {
   width: 100%;
+  padding: 0.9rem 1.1rem;
+  margin-top: 0.35rem;
+  min-height: 3rem;
 }

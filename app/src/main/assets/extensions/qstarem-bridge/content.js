@@ -294,8 +294,24 @@
           </div>
           <div class="qstarem-settings-field qstarem-update-section">
             <span>Updates</span>
-            <p id="qstarem-app-version" class="qstarem-update-version">QStarem</p>
-            <p id="qstarem-update-status" class="qstarem-update-status">Tap below to check for updates.</p>
+            <div id="qstarem-update-badge" class="qstarem-update-badge qstarem-update-badge-idle">Tap to check</div>
+            <div class="qstarem-update-version-grid">
+              <div class="qstarem-update-version-card">
+                <span class="qstarem-update-version-label">Installed</span>
+                <strong id="qstarem-installed-version" class="qstarem-update-version-value">—</strong>
+              </div>
+              <div class="qstarem-update-version-card">
+                <span class="qstarem-update-version-label">Latest</span>
+                <strong id="qstarem-latest-version" class="qstarem-update-version-value">—</strong>
+              </div>
+            </div>
+            <div id="qstarem-update-progress-wrap" class="qstarem-update-progress-wrap" hidden>
+              <div class="qstarem-update-progress-track">
+                <div id="qstarem-update-progress-bar" class="qstarem-update-progress-bar"></div>
+              </div>
+              <span id="qstarem-update-progress-label" class="qstarem-update-progress-label">0%</span>
+            </div>
+            <p id="qstarem-update-status" class="qstarem-update-status">Open App settings and tap Check for updates.</p>
             <button type="button" class="qstarem-settings-link" id="qstarem-check-updates">Check for updates</button>
             <button type="button" class="qstarem-settings-primary qstarem-update-install" id="qstarem-install-update" hidden>Install update</button>
           </div>
@@ -320,6 +336,12 @@
       location.hash = CLEAR_HASH;
     });
     panel.querySelector("#qstarem-check-updates").addEventListener("click", () => {
+      openSettingsPanel();
+      updateStatusFromBridge({
+        phase: "checking",
+        message: "Checking for updates…",
+        currentVersion: readSettings().appVersion,
+      });
       location.hash = UPDATE_CHECK_HASH;
     });
     panel.querySelector("#qstarem-install-update").addEventListener("click", () => {
@@ -334,22 +356,79 @@
 
     const statusEl = panel.querySelector("#qstarem-update-status");
     const installBtn = panel.querySelector("#qstarem-install-update");
+    const badgeEl = panel.querySelector("#qstarem-update-badge");
+    const installedEl = panel.querySelector("#qstarem-installed-version");
+    const latestEl = panel.querySelector("#qstarem-latest-version");
+    const progressWrap = panel.querySelector("#qstarem-update-progress-wrap");
+    const progressBar = panel.querySelector("#qstarem-update-progress-bar");
+    const progressLabel = panel.querySelector("#qstarem-update-progress-label");
     if (!statusEl || !installBtn) return;
 
     const phase = detail.phase || "idle";
     const progress = Number(detail.progress || 0);
-    let message = detail.message || "Up to date.";
+    const installedVersion = detail.currentVersion || readSettings().appVersion || "unknown";
+    const latestVersion = detail.availableVersion || installedVersion;
 
-    if (phase === "downloading" && progress > 0) {
-      message = `Downloading… ${Math.round(progress * 100)}%`;
+    if (installedEl) {
+      installedEl.textContent = `v${installedVersion}`;
+    }
+    if (latestEl) {
+      latestEl.textContent =
+        phase === "checking" && !detail.availableVersion ? "Checking…" : `v${latestVersion}`;
+    }
+
+    let message = detail.message || "Up to date.";
+    let badgeText = "Up to date";
+    let badgeClass = "qstarem-update-badge-idle";
+
+    if (phase === "downloading") {
+      badgeText = "Downloading";
+      badgeClass = "qstarem-update-badge-downloading";
+      message = detail.message || `Downloading QStarem ${latestVersion}…`;
+      if (progress > 0) {
+        message = `${message} ${Math.round(progress * 100)}% complete.`;
+      }
     } else if (phase === "checking") {
+      badgeText = "Checking…";
+      badgeClass = "qstarem-update-badge-checking";
       message = detail.message || "Checking for updates…";
     } else if (phase === "ready") {
-      message = detail.message || "Update ready to install.";
+      badgeText = "Update ready";
+      badgeClass = "qstarem-update-badge-ready";
+      message = detail.message || `QStarem ${latestVersion} is ready to install.`;
+    } else if (phase === "error") {
+      badgeText = "Update failed";
+      badgeClass = "qstarem-update-badge-error";
+      message = detail.message || "Update check failed.";
+    } else if (detail.availableVersion && detail.availableVersion !== installedVersion) {
+      badgeText = "Update available";
+      badgeClass = "qstarem-update-badge-ready";
+      message = detail.message || `QStarem ${detail.availableVersion} is available.`;
+    } else {
+      badgeText = "Up to date";
+      badgeClass = "qstarem-update-badge-current";
+      message =
+        detail.message ||
+        `You're on the latest build. Installed v${installedVersion}, latest v${latestVersion}.`;
     }
 
     statusEl.textContent = message;
     installBtn.hidden = phase !== "ready";
+
+    if (badgeEl) {
+      badgeEl.textContent = badgeText;
+      badgeEl.className = `qstarem-update-badge ${badgeClass}`;
+    }
+
+    if (progressWrap && progressBar && progressLabel) {
+      const showProgress = phase === "downloading" && progress > 0;
+      progressWrap.hidden = !showProgress;
+      if (showProgress) {
+        const percent = Math.round(progress * 100);
+        progressBar.style.width = `${percent}%`;
+        progressLabel.textContent = `${percent}%`;
+      }
+    }
   }
 
   function populateSettingsPanel() {
@@ -364,11 +443,11 @@
     });
     renderIconChoices(settings.appIconId || 1);
 
-    const versionEl = panel.querySelector("#qstarem-app-version");
-    if (versionEl) {
-      const version = settings.appVersion || "unknown";
-      versionEl.textContent = `Installed: QStarem v${version}`;
-    }
+    updateStatusFromBridge({
+      phase: "idle",
+      currentVersion: settings.appVersion || "unknown",
+      message: "Tap Check for updates to verify your build.",
+    });
   }
 
   function openSettingsPanel() {
