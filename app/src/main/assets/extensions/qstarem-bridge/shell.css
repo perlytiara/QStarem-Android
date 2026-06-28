@@ -201,3 +201,24 @@ body.qstarem-settings-open {
   color: #b8b8c8;
   text-align: center;
 }
+
+.qstarem-update-section {
+  gap: 0.45rem;
+}
+
+.qstarem-update-version {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #f5f5fa;
+}
+
+.qstarem-update-status {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #b8b8c8;
+  line-height: 1.4;
+}
+
+.qstarem-update-install {
+  width: 100%;
+}

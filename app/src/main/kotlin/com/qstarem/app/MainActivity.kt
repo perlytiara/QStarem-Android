@@ -18,6 +18,7 @@ import androidx.core.view.WindowCompat
 import com.qstarem.app.media.PipController
 import com.qstarem.app.ui.AppIconManager
 import com.qstarem.app.ui.BrowserScreen
+import com.qstarem.app.ui.UpdateBanner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -44,6 +45,9 @@ class MainActivity : ComponentActivity() {
             pipController.enterPipIfPlaying()
         }
         viewModel.onRequestPip = { pipController.enterPipIfPlaying() }
+        viewModel.onInstallUpdateRequested = {
+            viewModel.installReadyUpdate(this@MainActivity)
+        }
 
         requestNotificationPermissionIfNeeded()
 
@@ -70,6 +74,7 @@ class MainActivity : ComponentActivity() {
                 val isFullscreen by viewModel.isFullscreen.collectAsState()
                 val isInPictureInPicture by viewModel.isInPictureInPicture.collectAsState()
                 val isMediaPlaying by viewModel.isMediaPlaying.collectAsState()
+                val updateState by viewModel.updateState.collectAsState()
 
                 viewModel.startIfNeeded()
 
@@ -82,6 +87,10 @@ class MainActivity : ComponentActivity() {
                     showSplash = phase != AppPhase.READY,
                     splashMessage = splashMessage,
                     onSwipeUpForPip = { pipController.enterPipIfPlaying() },
+                    updateState = updateState,
+                    onConfirmUpdateDownload = { viewModel.confirmUpdateDownload() },
+                    onDismissUpdateDownload = { viewModel.dismissUpdateDownload() },
+                    onInstallUpdate = { viewModel.installReadyUpdate(this@MainActivity) },
                 )
             }
         }

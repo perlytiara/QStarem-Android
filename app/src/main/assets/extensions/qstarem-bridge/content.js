@@ -6,6 +6,8 @@
   const EXIT_HASH = "#qstarem-exit";
   const SAVE_HASH = "#qstarem-save";
   const CLEAR_HASH = "#qstarem-clear";
+  const UPDATE_CHECK_HASH = "#qstarem-update-check";
+  const UPDATE_INSTALL_HASH = "#qstarem-update-install";
   const RETURN_ITEM_ID = "qstarem-return-item";
   const SETTINGS_ITEM_ID = "qstarem-settings-item";
   const SETTINGS_PANEL_ID = "qstarem-settings-panel";
@@ -290,6 +292,13 @@
             <span>App icon</span>
             <div id="qstarem-icon-choices" class="qstarem-icon-grid"></div>
           </div>
+          <div class="qstarem-settings-field qstarem-update-section">
+            <span>Updates</span>
+            <p id="qstarem-app-version" class="qstarem-update-version">QStarem</p>
+            <p id="qstarem-update-status" class="qstarem-update-status">Tap below to check for updates.</p>
+            <button type="button" class="qstarem-settings-link" id="qstarem-check-updates">Check for updates</button>
+            <button type="button" class="qstarem-settings-primary qstarem-update-install" id="qstarem-install-update" hidden>Install update</button>
+          </div>
         </div>
         <footer class="qstarem-settings-footer">
           <button type="button" class="qstarem-settings-primary" id="qstarem-save-settings">Save</button>
@@ -310,6 +319,33 @@
       closeSettingsPanel();
       location.hash = CLEAR_HASH;
     });
+    panel.querySelector("#qstarem-check-updates").addEventListener("click", () => {
+      location.hash = UPDATE_CHECK_HASH;
+    });
+    panel.querySelector("#qstarem-install-update").addEventListener("click", () => {
+      closeSettingsPanel();
+      location.hash = UPDATE_INSTALL_HASH;
+    });
+  }
+
+  function updateStatusFromBridge(detail) {
+    const panel = document.getElementById(SETTINGS_PANEL_ID);
+    if (!panel) return;
+
+    const statusEl = panel.querySelector("#qstarem-update-status");
+    const installBtn = panel.querySelector("#qstarem-install-update");
+    if (!statusEl || !installBtn) return;
+
+    const phase = detail.phase || "idle";
+    const progress = Number(detail.progress || 0);
+    let message = detail.message || "Up to date.";
+
+    if (phase === "downloading" && progress > 0) {
+      message = `${message} ${Math.round(progress * 100)}%`;
+    }
+
+    statusEl.textContent = message;
+    installBtn.hidden = phase !== "ready";
   }
 
   function populateSettingsPanel() {
@@ -323,6 +359,12 @@
       input.checked = input.value === blocker;
     });
     renderIconChoices(settings.appIconId || 1);
+
+    const versionEl = panel.querySelector("#qstarem-app-version");
+    if (versionEl) {
+      const version = settings.appVersion || "unknown";
+      versionEl.textContent = `Installed: QStarem v${version}`;
+    }
   }
 
   function openSettingsPanel() {
@@ -389,6 +431,9 @@
   }
 
   window.addEventListener("qstarem-settings-updated", populateSettingsPanel);
+  window.addEventListener("qstarem-update-status", (event) => {
+    updateStatusFromBridge(event.detail || {});
+  });
   window.addEventListener("qstarem-exit-player", requestExitPlayer);
   window.addEventListener("hashchange", () => {
     if (location.hash === EXIT_HASH) {

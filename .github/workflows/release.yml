@@ -50,10 +50,41 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           cp app/build/outputs/apk/release/app-release.apk "QStarem-${VERSION}-release.apk"
 
+      - name: Generate latest.json
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION_CODE=$(grep 'versionCode =' app/build.gradle.kts | head -1 | sed 's/.*= //')
+          APK_FILE="QStarem-${VERSION}-release.apk"
+          SHA256=$(sha256sum "$APK_FILE" | awk '{print $1}')
+          export VERSION VERSION_CODE APK_FILE SHA256 GITHUB_REF_NAME
+          python3 - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+
+          payload = {
+              "version": os.environ["VERSION"],
+              "versionCode": int(os.environ["VERSION_CODE"]),
+              "pub_date": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "apk": {
+                  "url": (
+                      f"https://github.com/perlytiara/QStarem-Android/releases/download/"
+                      f"{os.environ['GITHUB_REF_NAME']}/{os.environ['APK_FILE']}"
+                  ),
+                  "sha256": os.environ["SHA256"],
+              },
+          }
+          with open("latest.json", "w", encoding="utf-8") as handle:
+              json.dump(payload, handle, indent=2)
+              handle.write("\n")
+          PY
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: QStarem-*-release.apk
+          files: |
+            QStarem-*-release.apk
+            latest.json
           generate_release_notes: true
           body: |
             ## QStarem ${{ github.ref_name }}
@@ -62,6 +93,7 @@ jobs:
 
             ### What's new
 
+            - **Auto-updates** — checks GitHub Releases on launch, downloads in the background, prompts to install
             - **Q Play icon** — new default launcher icon and five alternate icons (Film Reel, Z Waves, Viewfinder, Orbital, Clapper)
             - **App settings in Z-Stream** — hamburger menu → **App settings** (home URL, ad blocker, P-Stream, icon picker)
             - **Media notification** — lock-screen controls and poster art when the app is backgrounded

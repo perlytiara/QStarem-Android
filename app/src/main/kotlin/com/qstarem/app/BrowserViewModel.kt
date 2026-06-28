@@ -11,6 +11,8 @@ import com.qstarem.app.data.AppSettings
 import com.qstarem.app.data.SettingsRepository
 import com.qstarem.app.media.MediaSessionCoordinator
 import com.qstarem.app.ui.AppIconManager
+import com.qstarem.app.update.AppUpdateManager
+import com.qstarem.app.update.UpdateUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -58,6 +60,10 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
     val isMediaPlaying: StateFlow<Boolean> = mediaSessionCoordinator.isMediaPlaying
 
+    private val appUpdateManager = AppUpdateManager(application)
+    val updateState: StateFlow<UpdateUiState> = appUpdateManager.state
+
+    var onInstallUpdateRequested: (() -> Unit)? = null
     var onRequestPip: (() -> Boolean)? = null
     private var onEnterPipListener: (() -> Unit)? = null
 
@@ -74,6 +80,8 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         onEnterPipRequested = { onEnterPipListener?.invoke() },
         onSettingsSaveRequested = { bridgeSettings -> applySettings(bridgeSettings) },
         onClearDataRequested = { clearBrowsingData() },
+        onUpdateCheckRequested = { checkForUpdates(manual = true) },
+        onUpdateInstallRequested = { onInstallUpdateRequested?.invoke() },
         onViewAttached = { viewAttachListener?.invoke() },
     )
 
@@ -83,6 +91,16 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     private var startupComplete = false
 
     private var hasStarted = false
+
+    init {
+        viewModelScope.launch {
+            appUpdateManager.state.collect { state ->
+                if (viewAttached) {
+                    browserSession.pushUpdateStatusToPage(state)
+                }
+            }
+        }
+    }
 
     fun configurePipBridge(onEnterPip: () -> Unit) {
         onEnterPipListener = onEnterPip
@@ -119,6 +137,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
             browserSession.loadUrl(settings.homeUrl)
             browserSession.queueSettingsPush(settings)
             _phase.value = AppPhase.READY
+            checkForUpdates(manual = false)
 
             Log.i(TAG, "Syncing bundled extensions (deferred)")
             extensionManager.syncExtensions(settings) { result ->
@@ -185,6 +204,26 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
     fun clearBrowsingData() {
         extensionManager.clearBrowsingData { }
+    }
+
+    fun checkForUpdates(manual: Boolean) {
+        viewModelScope.launch {
+            appUpdateManager.checkForUpdates(manual)
+        }
+    }
+
+    fun confirmUpdateDownload() {
+        viewModelScope.launch {
+            appUpdateManager.confirmMobileDownload()
+        }
+    }
+
+    fun dismissUpdateDownload() {
+        appUpdateManager.dismissPendingDownload()
+    }
+
+    fun installReadyUpdate(activity: android.app.Activity) {
+        appUpdateManager.installReadyUpdate(activity)
     }
 
     override fun onCleared() {

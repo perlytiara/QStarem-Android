@@ -58,11 +58,26 @@ The default launcher icon is **Q Play** (purple ring + play mark). You can pick 
 
 The home-screen icon updates after save (may take a moment on some launchers).
 
+## Auto-updates
+
+QStarem checks [GitHub Releases](https://github.com/perlytiara/QStarem-Android/releases/latest) on launch for a newer APK.
+
+1. If an update is available, the app downloads it in the background (~550 MB).
+2. On mobile data, you are asked before the download starts.
+3. When the download finishes, a banner appears with **Install now** — Android always shows a system confirmation before installing.
+
+You can also open **Hamburger menu → App settings → Check for updates**, or tap **Install update** when a download is ready.
+
+**Notes:**
+
+- Updates must be signed with the same release key; otherwise uninstall the old build first.
+- Allow **Install unknown apps** for QStarem if Android prompts you.
+
 ## Settings
 
 App settings live **inside Z-Stream**, not in Android system settings:
 
-- **Hamburger menu → App settings** — home URL, ad blocker, P-Stream toggle, app icon, clear browsing data
+- **Hamburger menu → App settings** — home URL, ad blocker, P-Stream toggle, app icon, updates, clear browsing data
 - While watching: **Return to browse** appears in the same menu
 
 ## Features
@@ -75,6 +90,7 @@ App settings live **inside Z-Stream**, not in Android system settings:
 | PiP | Auto on home press (Android 12+), swipe-up gesture while playing |
 | Media controls | Lock-screen and notification controls with poster art when backgrounded |
 | App icons | Six launcher icons, switchable in App settings |
+| Auto-updates | GitHub Releases check on launch; background APK download and install prompt |
 
 ## Disclaimer
 

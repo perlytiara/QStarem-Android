@@ -12,8 +12,8 @@ android {
         applicationId = "com.qstarem.app"
         minSdk = 26
         targetSdk = 28
-        versionCode = 8
-        versionName = "1.0.7"
+        versionCode = 9
+        versionName = "1.0.8"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -53,6 +53,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     androidResources {
@@ -93,6 +94,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.media:media:1.7.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.mozilla.geckoview:geckoview:152.0.20260621191700")
 
     debugImplementation("androidx.compose.ui:ui-tooling")

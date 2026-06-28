@@ -3,10 +3,12 @@ package com.qstarem.app.browser
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
+import com.qstarem.app.BuildConfig
 import com.qstarem.app.GeckoRuntimeHolder
 import com.qstarem.app.data.AdBlockerChoice
 import com.qstarem.app.data.AppSettings
 import com.qstarem.app.media.MediaSessionCoordinator
+import com.qstarem.app.update.UpdateUiState
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.NavigationDelegate
 import org.mozilla.geckoview.GeckoSession.ProgressDelegate
@@ -22,6 +24,8 @@ class BrowserSession(
     private val onEnterPipRequested: () -> Unit,
     private val onSettingsSaveRequested: (AppSettings) -> Unit,
     private val onClearDataRequested: () -> Unit,
+    private val onUpdateCheckRequested: () -> Unit,
+    private val onUpdateInstallRequested: () -> Unit,
     private val onViewAttached: () -> Unit = {},
 ) {
     val session: GeckoSession = GeckoSession(
@@ -95,6 +99,16 @@ class BrowserSession(
                         Log.i(TAG, "Bridge requested clear browsing data")
                         onClearDataRequested()
                         restoreUrlWithoutHash(url, CLEAR_DATA_HASH)
+                    }
+                    url.contains(UPDATE_CHECK_HASH) -> {
+                        Log.i(TAG, "Bridge requested update check")
+                        onUpdateCheckRequested()
+                        restoreUrlWithoutHash(url, UPDATE_CHECK_HASH)
+                    }
+                    url.contains(UPDATE_INSTALL_HASH) -> {
+                        Log.i(TAG, "Bridge requested update install")
+                        onUpdateInstallRequested()
+                        restoreUrlWithoutHash(url, UPDATE_INSTALL_HASH)
                     }
                     url.contains(EXIT_PLAYER_HASH) -> Unit
                 }
@@ -172,10 +186,18 @@ class BrowserSession(
     fun pushSettingsToPage(settings: AppSettings) {
         if (!isOpen || !isViewAttached) return
         val json =
-            """{"homeUrl":"${settings.homeUrl.replace("\"", "\\\"")}","adBlocker":"${settings.adBlocker.name}","pStreamEnabled":${settings.pStreamEnabled},"appIconId":${settings.appIconId}}"""
+            """{"homeUrl":"${settings.homeUrl.replace("\"", "\\\"")}","adBlocker":"${settings.adBlocker.name}","pStreamEnabled":${settings.pStreamEnabled},"appIconId":${settings.appIconId},"appVersion":"${BuildConfig.VERSION_NAME}"}"""
         val encoded = Base64.encodeToString(json.toByteArray(), Base64.NO_WRAP)
         val script =
             "javascript:(function(){try{localStorage.setItem('qstarem-app-settings',atob('$encoded'));window.dispatchEvent(new Event('qstarem-settings-updated'));}catch(e){}})()"
+        session.loadUri(script)
+    }
+
+    fun pushUpdateStatusToPage(state: UpdateUiState) {
+        if (!isOpen || !isViewAttached) return
+        val message = state.message?.replace("\\", "\\\\")?.replace("\"", "\\\"") ?: ""
+        val script =
+            "javascript:(function(){try{window.dispatchEvent(new CustomEvent('qstarem-update-status',{detail:{phase:'${state.phase.name.lowercase()}',message:'$message',availableVersion:'${state.availableVersion ?: ""}',progress:${state.progress}}}));}catch(e){}})()"
         session.loadUri(script)
     }
 
@@ -228,5 +250,7 @@ class BrowserSession(
         private const val PIP_HASH = "#qstarem-pip"
         private const val SAVE_SETTINGS_HASH = "#qstarem-save"
         private const val CLEAR_DATA_HASH = "#qstarem-clear"
+        private const val UPDATE_CHECK_HASH = "#qstarem-update-check"
+        private const val UPDATE_INSTALL_HASH = "#qstarem-update-install"
     }
 }
