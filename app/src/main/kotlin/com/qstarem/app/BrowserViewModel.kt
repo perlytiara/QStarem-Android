@@ -222,6 +222,10 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         appUpdateManager.dismissPendingDownload()
     }
 
+    fun dismissReadyUpdate() {
+        appUpdateManager.dismissReadyInstall()
+    }
+
     fun installReadyUpdate(activity: android.app.Activity) {
         appUpdateManager.installReadyUpdate(activity)
     }

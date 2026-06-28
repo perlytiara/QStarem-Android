@@ -13,12 +13,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import com.qstarem.app.media.PipController
 import com.qstarem.app.ui.AppIconManager
 import com.qstarem.app.ui.BrowserScreen
-import com.qstarem.app.ui.UpdateBanner
+import com.qstarem.app.ui.UpdateReadyDialog
+import com.qstarem.app.update.UpdatePhase
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -75,6 +80,13 @@ class MainActivity : ComponentActivity() {
                 val isInPictureInPicture by viewModel.isInPictureInPicture.collectAsState()
                 val isMediaPlaying by viewModel.isMediaPlaying.collectAsState()
                 val updateState by viewModel.updateState.collectAsState()
+                var showUpdateDialog by remember { mutableStateOf(false) }
+
+                LaunchedEffect(updateState.phase) {
+                    if (updateState.phase == UpdatePhase.Ready) {
+                        showUpdateDialog = true
+                    }
+                }
 
                 viewModel.startIfNeeded()
 
@@ -87,10 +99,19 @@ class MainActivity : ComponentActivity() {
                     showSplash = phase != AppPhase.READY,
                     splashMessage = splashMessage,
                     onSwipeUpForPip = { pipController.enterPipIfPlaying() },
-                    updateState = updateState,
-                    onConfirmUpdateDownload = { viewModel.confirmUpdateDownload() },
-                    onDismissUpdateDownload = { viewModel.dismissUpdateDownload() },
-                    onInstallUpdate = { viewModel.installReadyUpdate(this@MainActivity) },
+                )
+
+                UpdateReadyDialog(
+                    state = updateState,
+                    visible = showUpdateDialog,
+                    onInstall = {
+                        showUpdateDialog = false
+                        viewModel.installReadyUpdate(this@MainActivity)
+                    },
+                    onDismiss = {
+                        showUpdateDialog = false
+                        viewModel.dismissReadyUpdate()
+                    },
                 )
             }
         }

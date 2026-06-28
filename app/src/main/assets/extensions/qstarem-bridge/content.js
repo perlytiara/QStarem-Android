@@ -341,7 +341,11 @@
     let message = detail.message || "Up to date.";
 
     if (phase === "downloading" && progress > 0) {
-      message = `${message} ${Math.round(progress * 100)}%`;
+      message = `Downloading… ${Math.round(progress * 100)}%`;
+    } else if (phase === "checking") {
+      message = detail.message || "Checking for updates…";
+    } else if (phase === "ready") {
+      message = detail.message || "Update ready to install.";
     }
 
     statusEl.textContent = message;

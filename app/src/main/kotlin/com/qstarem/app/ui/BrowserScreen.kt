@@ -5,7 +5,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,7 +22,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.qstarem.app.browser.BrowserSession
 import com.qstarem.app.browser.GeckoBrowserView
-import com.qstarem.app.update.UpdateUiState
 
 private val BOTTOM_GESTURE_HEIGHT = 48.dp
 
@@ -37,10 +35,6 @@ fun BrowserScreen(
     showSplash: Boolean,
     splashMessage: String,
     onSwipeUpForPip: () -> Unit,
-    updateState: UpdateUiState,
-    onConfirmUpdateDownload: () -> Unit,
-    onDismissUpdateDownload: () -> Unit,
-    onInstallUpdate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -95,21 +89,6 @@ fun BrowserScreen(
             modifier = Modifier.fillMaxSize(),
         ) {
             SplashScreen(message = splashMessage)
-        }
-
-        if (!isFullscreen && !showSplash) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
-            ) {
-                UpdateBanner(
-                    state = updateState,
-                    onConfirmDownload = onConfirmUpdateDownload,
-                    onDismissDownload = onDismissUpdateDownload,
-                    onInstallUpdate = onInstallUpdate,
-                )
-            }
         }
     }
 }

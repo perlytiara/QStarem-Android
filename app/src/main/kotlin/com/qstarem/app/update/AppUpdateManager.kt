@@ -2,8 +2,6 @@ package com.qstarem.app.update
 
 import android.app.Activity
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import com.qstarem.app.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,17 +71,7 @@ class AppUpdateManager(context: Context) {
                 }
 
                 pendingManifest = manifest
-                if (!isOnWifi() && !manual) {
-                    _state.value = _state.value.copy(
-                        phase = UpdatePhase.AwaitingDownloadConsent,
-                        availableVersion = manifest.version,
-                        notes = manifest.notes,
-                        message = "QStarem ${manifest.version} is available (~550 MB). Download on mobile data?",
-                    )
-                    return@withContext
-                }
-
-                downloadPending(manifest)
+                downloadPending(manifest, background = !manual)
             } catch (error: Exception) {
                 _state.value = _state.value.copy(
                     phase = UpdatePhase.Error,
@@ -95,13 +83,20 @@ class AppUpdateManager(context: Context) {
 
     suspend fun confirmMobileDownload() {
         val manifest = pendingManifest ?: return
-        downloadPending(manifest)
+        downloadPending(manifest, background = false)
     }
 
     fun dismissPendingDownload() {
         _state.value = _state.value.copy(
             phase = UpdatePhase.Idle,
             message = "Update download postponed.",
+        )
+    }
+
+    fun dismissReadyInstall() {
+        _state.value = _state.value.copy(
+            phase = UpdatePhase.Idle,
+            message = "Update ready — install from App settings when you want.",
         )
     }
 
@@ -117,7 +112,7 @@ class AppUpdateManager(context: Context) {
         installer.install(activity, apk)
     }
 
-    private suspend fun downloadPending(manifest: UpdateManifest) {
+    private suspend fun downloadPending(manifest: UpdateManifest, background: Boolean) {
         withContext(Dispatchers.IO) {
             try {
                 _state.value = _state.value.copy(
@@ -125,14 +120,22 @@ class AppUpdateManager(context: Context) {
                     availableVersion = manifest.version,
                     notes = manifest.notes,
                     progress = 0f,
-                    message = "Downloading QStarem ${manifest.version}…",
+                    message = if (background) {
+                        "Downloading update in background…"
+                    } else {
+                        "Downloading QStarem ${manifest.version}…"
+                    },
                 )
 
                 val apk = downloader.download(manifest) { progress ->
                     _state.value = _state.value.copy(
                         phase = UpdatePhase.Downloading,
                         progress = progress,
-                        message = "Downloading QStarem ${manifest.version}…",
+                        message = if (background) {
+                            "Downloading update in background…"
+                        } else {
+                            "Downloading QStarem ${manifest.version}…"
+                        },
                     )
                 }
 
@@ -149,14 +152,5 @@ class AppUpdateManager(context: Context) {
                 )
             }
         }
-    }
-
-    private fun isOnWifi(): Boolean {
-        val connectivityManager =
-            appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
     }
 }
