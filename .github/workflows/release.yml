@@ -93,6 +93,8 @@ jobs:
 
             ### What's new
 
+            - **Category scroll** — genre chips (Action, Adventure, etc.) scroll fully to the start on mobile
+            - **App settings updates** — check-for-updates stays in App settings with clearer version status
             - **Auto-updates** — checks GitHub Releases on launch, downloads in the background, prompts to install
             - **Q Play icon** — new default launcher icon and five alternate icons (Film Reel, Z Waves, Viewfinder, Orbital, Clapper)
             - **App settings in Z-Stream** — hamburger menu → **App settings** (home URL, ad blocker, P-Stream, icon picker)

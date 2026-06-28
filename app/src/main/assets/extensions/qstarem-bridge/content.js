@@ -29,6 +29,81 @@
 
   let enhanceScheduled = false;
 
+  const CATEGORY_SCROLL_SELECTOR =
+    ".overflow-x-auto.no-scrollbar.mask-linear-right, .overflow-x-auto.scrollbar-hide.carousel-container, .carousel-container.overflow-x-auto";
+
+  function isHorizontalScrollRow(node) {
+    if (!node || node.nodeType !== 1) return false;
+    const style = window.getComputedStyle(node);
+    if (!/(auto|scroll)/.test(style.overflowX)) return false;
+    const rect = node.getBoundingClientRect();
+    if (rect.width < 120) return false;
+    return node.scrollWidth > rect.width + 12;
+  }
+
+  function allowParentHorizontalScroll(node) {
+    let parent = node.parentElement;
+    while (parent && parent !== document.body) {
+      const style = window.getComputedStyle(parent);
+      if (style.overflowX === "hidden" && parent.scrollWidth <= parent.clientWidth + 1) {
+        parent.classList.add("qstarem-allow-horizontal-scroll");
+      }
+      parent = parent.parentElement;
+    }
+  }
+
+  function ensureCategoryScrollStart(node) {
+    if (!node || !isHorizontalScrollRow(node)) return;
+    if (node.scrollLeft > 0) return;
+
+    const firstChip = node.querySelector("button, a, [role='button']");
+    if (!firstChip) return;
+
+    const rowRect = node.getBoundingClientRect();
+    const chipRect = firstChip.getBoundingClientRect();
+    if (chipRect.left >= rowRect.left - 2) return;
+
+    const hiddenLeft = rowRect.left - chipRect.left;
+    if (hiddenLeft > 0) {
+      node.scrollLeft = Math.max(0, node.scrollLeft - hiddenLeft - 8);
+    }
+  }
+
+  function fixCategoryScrollRow(node) {
+    if (!node || node.dataset.qstaremScrollFixed === "true") return;
+    if (!isHorizontalScrollRow(node)) return;
+
+    node.dataset.qstaremScrollFixed = "true";
+    node.classList.add("qstarem-category-scroll");
+    allowParentHorizontalScroll(node);
+
+    if (!node.querySelector(":scope > .qstarem-category-scroll-lead")) {
+      const lead = document.createElement("span");
+      lead.className = "qstarem-category-scroll-lead";
+      lead.setAttribute("aria-hidden", "true");
+      node.insertBefore(lead, node.firstChild);
+    }
+
+    const syncStart = () => ensureCategoryScrollStart(node);
+    node.addEventListener("scroll", syncStart, { passive: true });
+    syncStart();
+    requestAnimationFrame(syncStart);
+  }
+
+  function fixCategoryScrollRows(root) {
+    root.querySelectorAll(CATEGORY_SCROLL_SELECTOR).forEach((node) => {
+      fixCategoryScrollRow(node);
+    });
+
+    root.querySelectorAll(".overflow-x-auto, .overflow-x-scroll").forEach((node) => {
+      if (node.dataset.qstaremScrollFixed === "true") return;
+      const chips = node.querySelectorAll(":scope > button, :scope > a, :scope > [role='button']");
+      if (chips.length >= 3) {
+        fixCategoryScrollRow(node);
+      }
+    });
+  }
+
   function readSettings() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -499,6 +574,7 @@
       enhanceScheduled = false;
       hideExitControls();
       injectMenuItems();
+      fixCategoryScrollRows(document);
     });
   }
 
@@ -535,5 +611,6 @@
     hideExitControls();
     populateSettingsPanel();
     scheduleEnhance();
+    fixCategoryScrollRows(document);
   });
 })();

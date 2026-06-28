@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "QStarem Bridge",
-  "version": "1.0.7",
+  "version": "1.0.11",
   "description": "Native bridge for QStarem playback and shell integration",
   "web_accessible_resources": [
     "icons/icon-1.png",

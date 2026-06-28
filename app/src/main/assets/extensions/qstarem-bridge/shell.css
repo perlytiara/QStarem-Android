@@ -1,4 +1,39 @@
 /* QStarem bridge — styles only for injected UI. Never override site layout. */
+/* Z-Stream genre/provider chips — restore full horizontal scroll on mobile */
+.overflow-x-auto.no-scrollbar.mask-linear-right,
+.qstarem-category-scroll {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  margin-inline: 0 !important;
+  padding-inline-start: max(1rem, env(safe-area-inset-left, 0px)) !important;
+  padding-inline-end: max(1rem, env(safe-area-inset-right, 0px)) !important;
+  scroll-padding-inline-start: max(1rem, env(safe-area-inset-left, 0px)) !important;
+  scroll-padding-inline-end: max(1rem, env(safe-area-inset-right, 0px)) !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+}
+
+.overflow-x-auto.scrollbar-hide.carousel-container,
+.overflow-x-auto.scrollbar-none.carousel-container,
+.carousel-container.overflow-x-auto {
+  scroll-padding-inline-start: max(0.75rem, env(safe-area-inset-left, 0px));
+  scroll-padding-inline-end: max(0.75rem, env(safe-area-inset-right, 0px));
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.qstarem-allow-horizontal-scroll {
+  overflow-x: visible !important;
+}
+
+.qstarem-category-scroll-lead {
+  flex: 0 0 max(0.25rem, env(safe-area-inset-left, 0px));
+  width: max(0.25rem, env(safe-area-inset-left, 0px));
+  min-width: max(0.25rem, env(safe-area-inset-left, 0px));
+  pointer-events: none;
+}
+
 .qstarem-hidden-exit {
   position: absolute !important;
   width: 1px !important;
