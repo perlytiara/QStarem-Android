@@ -1,7 +1,7 @@
 # QStarem
 
 <p align="center">
-  <img src="docs/assets/logo.svg" alt="QStarem logo" width="160">
+  <img src="docs/assets/app-icon.png" alt="QStarem app icon (Q Play)" width="128">
 </p>
 
 <p align="center">
@@ -28,9 +28,8 @@ Z-Stream is a movie-web-style streaming frontend. QStarem wraps it in a focused 
 - **P-Stream** — extra sources and quality options (no manual XPI install on Android)
 - **uBlock Origin** (default) or **AdGuard** — ad and popup blocking
 - **GeckoView** — real Firefox engine with WebExtension support
-- **Picture-in-Picture**, edge-to-edge video, and a minimal dark UI
-
-Swipe down from the top for back, reload, home, PiP, and settings.
+- **Picture-in-Picture**, media notification controls, and a minimal dark UI
+- **Six app icons** — default **Q Play**, switchable in App settings
 
 ## Install from Releases
 
@@ -39,15 +38,43 @@ Swipe down from the top for back, reload, home, PiP, and settings.
 3. If needed: **Settings → Security → Install unknown apps** and enable your download app.
 4. Open **QStarem** and start browsing your configured Z-Stream instance (default: [zstream.mov](https://zstream.mov)).
 
+## App icon
+
+The default launcher icon is **Q Play** (purple ring + play mark). You can pick a different icon anytime:
+
+1. Open Z-Stream inside QStarem.
+2. Open the site **hamburger menu** (Account preferences / Appearance / Subtitles area).
+3. Tap **App settings**.
+4. Choose one of six icons and tap **Save**.
+
+| Icon | Name |
+|------|------|
+| 1 | Q Play (default) |
+| 2 | Film Reel |
+| 3 | Z Waves |
+| 4 | Viewfinder |
+| 5 | Orbital |
+| 6 | Clapper |
+
+The home-screen icon updates after save (may take a moment on some launchers).
+
+## Settings
+
+App settings live **inside Z-Stream**, not in Android system settings:
+
+- **Hamburger menu → App settings** — home URL, ad blocker, P-Stream toggle, app icon, clear browsing data
+- While watching: **Return to browse** appears in the same menu
+
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| Z-Stream frontend | Default home URL `https://zstream.mov`, configurable in settings |
+| Z-Stream frontend | Default home URL `https://zstream.mov`, configurable in App settings |
 | P-Stream | Toggle bundled extension for enhanced sources |
 | Ad blocking | uBlock Origin, AdGuard, or off |
-| PiP | Auto on home press (Android 12+), manual button in chrome |
-| Settings | Home URL, extensions, clear browsing data |
+| PiP | Auto on home press (Android 12+), swipe-up gesture while playing |
+| Media controls | Lock-screen and notification controls with poster art when backgrounded |
+| App icons | Six launcher icons, switchable in App settings |
 
 ## Disclaimer
 

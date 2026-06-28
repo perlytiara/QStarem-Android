@@ -10,7 +10,7 @@ import android.util.Log
 import com.qstarem.app.data.AppSettings
 import com.qstarem.app.data.SettingsRepository
 import com.qstarem.app.media.MediaSessionCoordinator
-import com.qstarem.app.media.QStaremMediaHolder
+import com.qstarem.app.ui.AppIconManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,9 +26,8 @@ enum class AppPhase {
 class BrowserViewModel(application: Application) : AndroidViewModel(application) {
     private val settingsRepository = SettingsRepository(application)
     private val extensionManager = ExtensionManager()
-    val mediaSessionCoordinator = MediaSessionCoordinator(application).also {
-        QStaremMediaHolder.coordinator = it
-    }
+    private val app = application as QStaremApplication
+    val mediaSessionCoordinator = app.mediaSessionCoordinator
 
     val settings: StateFlow<AppSettings> = settingsRepository.settings.stateIn(
         scope = viewModelScope,
@@ -73,6 +72,8 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         onCanGoBackChanged = { canGoBack -> _canGoBack.value = canGoBack },
         onFullscreenChanged = { fullscreen -> _isFullscreen.value = fullscreen },
         onEnterPipRequested = { onEnterPipListener?.invoke() },
+        onSettingsSaveRequested = { bridgeSettings -> applySettings(bridgeSettings) },
+        onClearDataRequested = { clearBrowsingData() },
         onViewAttached = { viewAttachListener?.invoke() },
     )
 
@@ -116,6 +117,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             _splashMessage.value = "Loading Z-Stream…"
             browserSession.loadUrl(settings.homeUrl)
+            browserSession.queueSettingsPush(settings)
             _phase.value = AppPhase.READY
 
             Log.i(TAG, "Syncing bundled extensions (deferred)")
@@ -135,6 +137,14 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
     fun goBack() {
         browserSession.goBack()
+    }
+
+    fun exitPlayerOrBack() {
+        if (isMediaPlaying.value) {
+            browserSession.requestExitPlayer()
+        } else {
+            goBack()
+        }
     }
 
     fun goHome() {
@@ -158,12 +168,15 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
             settingsRepository.updateHomeUrl(newSettings.homeUrl)
             settingsRepository.updateAdBlocker(newSettings.adBlocker)
             settingsRepository.updatePStreamEnabled(newSettings.pStreamEnabled)
+            settingsRepository.updateAppIconId(newSettings.appIconId)
+            AppIconManager.apply(getApplication(), newSettings.appIconId)
 
             _splashMessage.value = "Applying extension settings…"
             _phase.value = AppPhase.SPLASH
             extensionManager.syncExtensions(newSettings) {
                 viewModelScope.launch {
                     browserSession.loadUrl(newSettings.homeUrl)
+                    browserSession.queueSettingsPush(newSettings)
                     _phase.value = AppPhase.READY
                 }
             }
@@ -175,8 +188,9 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     }
 
     override fun onCleared() {
-        browserSession.release()
-        QStaremMediaHolder.coordinator = null
+        if (!isMediaPlaying.value) {
+            browserSession.release()
+        }
         super.onCleared()
     }
 

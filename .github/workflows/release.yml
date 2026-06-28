@@ -60,16 +60,24 @@ jobs:
 
             Native Android browser shell for [Z-Stream](https://zstream.mov) with bundled **P-Stream** and ad blocking.
 
+            ### What's new
+
+            - **Q Play icon** — new default launcher icon and five alternate icons (Film Reel, Z Waves, Viewfinder, Orbital, Clapper)
+            - **App settings in Z-Stream** — hamburger menu → **App settings** (home URL, ad blocker, P-Stream, icon picker)
+            - **Media notification** — lock-screen controls and poster art when the app is backgrounded
+            - **Picture-in-Picture** — swipe up or press Home while playing
+            - **Return to browse** — exit player from the site hamburger menu
+            - **Scroll fixes** — one-finger page scroll restored (edge-only gesture zones)
+
             ### Install
 
             1. Download `QStarem-*-release.apk` below.
             2. Allow installation from your browser or file manager if prompted.
             3. Open QStarem — default home is [zstream.mov](https://zstream.mov).
 
-            ### Bundled extensions
+            ### Change app icon
 
-            - P-Stream (extra sources)
-            - uBlock Origin or AdGuard (settings)
+            Z-Stream hamburger menu → **App settings** → pick an icon → **Save**.
 
             ### Desktop
 

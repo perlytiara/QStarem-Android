@@ -24,13 +24,91 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:supportsPictureInPicture="true"
-            android:windowSoftInputMode="stateUnspecified|adjustResize">
+            android:windowSoftInputMode="stateUnspecified|adjustResize" />
 
+        <activity-alias
+            android:name=".MainActivityIcon1"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityIcon2"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_v2"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_v2_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityIcon3"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_v3"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_v3_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityIcon4"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_v4"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_v4_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityIcon5"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_v5"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_v5_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityIcon6"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_v6"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_v6_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <receiver
             android:name=".media.MediaControlReceiver"
@@ -40,5 +118,10 @@
                 <action android:name="com.qstarem.app.action.MEDIA_STOP" />
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".media.MediaPlaybackService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
     </application>
 </manifest>

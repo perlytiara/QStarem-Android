@@ -12,8 +12,8 @@ android {
         applicationId = "com.qstarem.app"
         minSdk = 26
         targetSdk = 28
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 8
+        versionName = "1.0.7"
 
         vectorDrawables {
             useSupportLibrary = true

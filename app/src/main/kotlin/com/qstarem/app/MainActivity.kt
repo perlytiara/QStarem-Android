@@ -13,16 +13,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.qstarem.app.media.PipController
+import com.qstarem.app.ui.AppIconManager
 import com.qstarem.app.ui.BrowserScreen
-import com.qstarem.app.ui.SettingsSheet
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import com.qstarem.app.theme.QStaremTheme
 
 class MainActivity : ComponentActivity() {
@@ -35,7 +33,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
 
         pipController = PipController(
             activity = this,
@@ -49,8 +47,14 @@ class MainActivity : ComponentActivity() {
 
         requestNotificationPermissionIfNeeded()
 
+        lifecycleScope.launch {
+            AppIconManager.apply(this@MainActivity, viewModel.settings.first().appIconId)
+        }
+
         onBackPressedDispatcher.addCallback(this) {
-            if (viewModel.canGoBack.value) {
+            if (viewModel.isMediaPlaying.value) {
+                viewModel.exitPlayerOrBack()
+            } else if (viewModel.canGoBack.value) {
                 viewModel.goBack()
             } else {
                 finish()
@@ -59,54 +63,26 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             QStaremTheme {
-                val settings by viewModel.settings.collectAsState()
                 val phase by viewModel.phase.collectAsState()
                 val splashMessage by viewModel.splashMessage.collectAsState()
                 val isLoading by viewModel.isLoading.collectAsState()
                 val loadProgress by viewModel.loadProgress.collectAsState()
-                val canGoBack by viewModel.canGoBack.collectAsState()
                 val isFullscreen by viewModel.isFullscreen.collectAsState()
                 val isInPictureInPicture by viewModel.isInPictureInPicture.collectAsState()
                 val isMediaPlaying by viewModel.isMediaPlaying.collectAsState()
-                var showSettings by remember { mutableStateOf(false) }
-                var controlsRevealed by remember { mutableStateOf(false) }
 
                 viewModel.startIfNeeded()
 
-                updateImmersiveMode(isMediaPlaying, controlsRevealed)
-
                 BrowserScreen(
                     browserSession = viewModel.browserSession,
-                    settings = settings,
                     isLoading = isLoading,
                     loadProgress = loadProgress,
-                    canGoBack = canGoBack,
-                    isFullscreen = isFullscreen,
-                    isInPictureInPicture = isInPictureInPicture,
+                    isFullscreen = isFullscreen || isInPictureInPicture,
                     isMediaPlaying = isMediaPlaying,
-                    controlsRevealed = controlsRevealed,
-                    onControlsRevealedChange = { controlsRevealed = it },
                     showSplash = phase != AppPhase.READY,
                     splashMessage = splashMessage,
-                    onBack = { viewModel.goBack() },
-                    onReload = { viewModel.reload() },
-                    onHome = { viewModel.goHomeOrPip() },
-                    onEnterPip = { pipController.enterPipIfPlaying() },
-                    onOpenSettings = { showSettings = true },
                     onSwipeUpForPip = { pipController.enterPipIfPlaying() },
                 )
-
-                if (showSettings) {
-                    SettingsSheet(
-                        settings = settings,
-                        onDismiss = { showSettings = false },
-                        onSave = { updated ->
-                            viewModel.applySettings(updated)
-                            showSettings = false
-                        },
-                        onClearData = { viewModel.clearBrowsingData() },
-                    )
-                }
             }
         }
     }
@@ -131,17 +107,6 @@ class MainActivity : ComponentActivity() {
             ) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
-        }
-    }
-
-    private fun updateImmersiveMode(isMediaPlaying: Boolean, controlsRevealed: Boolean) {
-        val controller = WindowInsetsControllerCompat(window, window.decorView)
-        if (isMediaPlaying && !controlsRevealed) {
-            controller.hide(WindowInsetsCompat.Type.systemBars())
-            controller.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        } else {
-            controller.show(WindowInsetsCompat.Type.systemBars())
         }
     }
 }

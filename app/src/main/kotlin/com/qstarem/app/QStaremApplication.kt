@@ -5,11 +5,19 @@ import android.app.Application
 import android.os.Build
 import android.os.Process
 import android.util.Log
+import com.qstarem.app.media.MediaSessionCoordinator
+import com.qstarem.app.media.QStaremMediaHolder
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoRuntimeSettings
 import java.io.File
 
 class QStaremApplication : Application() {
+    val mediaSessionCoordinator: MediaSessionCoordinator by lazy {
+        MediaSessionCoordinator(this).also {
+            QStaremMediaHolder.coordinator = it
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         if (!isMainProcess()) {

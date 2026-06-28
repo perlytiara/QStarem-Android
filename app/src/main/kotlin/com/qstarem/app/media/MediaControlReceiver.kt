@@ -16,7 +16,7 @@ class MediaControlReceiver : BroadcastReceiver() {
                 }
             }
             MediaSessionCoordinator.ACTION_MEDIA_STOP -> {
-                coordinator.pause()
+                coordinator.stopPlayback()
             }
         }
     }

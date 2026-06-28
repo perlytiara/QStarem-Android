@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +20,7 @@ class SettingsRepository(private val context: Context) {
             adBlocker = AdBlockerChoice.entries.find { it.name == prefs[KEY_AD_BLOCKER] }
                 ?: AdBlockerChoice.UBLOCK,
             pStreamEnabled = prefs[KEY_PSTREAM_ENABLED] ?: true,
+            appIconId = prefs[KEY_APP_ICON_ID] ?: AppSettings.DEFAULT_APP_ICON_ID,
         )
     }
 
@@ -34,9 +36,19 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { it[KEY_PSTREAM_ENABLED] = enabled }
     }
 
+    suspend fun updateAppIconId(iconId: Int) {
+        context.dataStore.edit {
+            it[KEY_APP_ICON_ID] = iconId.coerceIn(
+                AppSettings.MIN_APP_ICON_ID,
+                AppSettings.MAX_APP_ICON_ID,
+            )
+        }
+    }
+
     companion object {
         private val KEY_HOME_URL = stringPreferencesKey("home_url")
         private val KEY_AD_BLOCKER = stringPreferencesKey("ad_blocker")
         private val KEY_PSTREAM_ENABLED = booleanPreferencesKey("pstream_enabled")
+        private val KEY_APP_ICON_ID = intPreferencesKey("app_icon_id")
     }
 }

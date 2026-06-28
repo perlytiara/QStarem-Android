@@ -1,8 +1,16 @@
 {
   "manifest_version": 2,
   "name": "QStarem Bridge",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "Native bridge for QStarem playback and shell integration",
+  "web_accessible_resources": [
+    "icons/icon-1.png",
+    "icons/icon-2.png",
+    "icons/icon-3.png",
+    "icons/icon-4.png",
+    "icons/icon-5.png",
+    "icons/icon-6.png"
+  ],
   "applications": {
     "gecko": {
       "id": "qstarem-bridge@qstarem.app",
